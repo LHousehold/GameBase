@@ -1,0 +1,54 @@
+{
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "post"
+      ],
+      "route": "joinGame/{id:alpha}"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "name": "outputDocument",
+      "direction": "out",
+      "type": "cosmosDB",
+      "databaseName": "householdDb",
+      "collectionName": "gameCollection",
+      "connectionStringSetting": "cosmos-lhousehold_DOCUMENTDB"
+    },
+    {
+      "name": "signalRGroupActions",
+      "direction": "out",
+      "type": "signalR",
+      "hubName": "gameHub",
+      "connectionStringSetting": "SignalRConnectionString"
+    },
+    {
+      "name": "inputDocument",
+      "databaseName": "householdDb",
+      "collectionName": "gameCollection",
+      "connectionStringSetting": "cosmos-lhousehold_DOCUMENTDB",
+      "id": "{id}-game",
+      "partitionKey": "{id}",
+      "direction": "in",
+      "type": "cosmosDB"
+    },
+    {
+      "name": "secretsDocument",
+      "databaseName": "householdDb",
+      "collectionName": "gameCollection",
+      "connectionStringSetting": "cosmos-lhousehold_DOCUMENTDB",
+      "id": "{id}-secrets",
+      "partitionKey": "{id}",
+      "direction": "in",
+      "type": "cosmosDB"
+    }
+  ]
+}

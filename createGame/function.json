@@ -1,0 +1,33 @@
+{
+  "bindings": [
+    {
+      "name": "req",
+      "authLevel": "anonymous",
+      "methods": [
+        "post"
+      ],
+      "direction": "in",
+      "type": "httpTrigger"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "name": "outputDocument",
+      "direction": "out",
+      "type": "cosmosDB",
+      "databaseName": "householdDb",
+      "collectionName": "gameCollection",
+      "connectionStringSetting": "cosmos-lhousehold_DOCUMENTDB"
+    },
+    {
+      "name": "signalRGroupActions",
+      "hubName": "gameHub",
+      "connectionStringSetting": "SignalRConnectionString",
+      "direction": "out",
+      "type": "signalR"
+    }
+  ]
+}
