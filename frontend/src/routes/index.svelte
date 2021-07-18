@@ -4,11 +4,8 @@
 	
 	let playerName;
 	let gameId;
-
 	let gameDoc;
-
 	let playerSecret;
-
 	let connection;
 
 	console.log('Refreshing...');
@@ -18,6 +15,7 @@
 
 		const newConnection = await new HubConnectionBuilder()
     .withUrl("/api")
+		.withAutomaticReconnect()
     .build();
 
 		await newConnection.start();
@@ -28,11 +26,30 @@
 	onMount( async () => {
 		connection = await connect();
 
-		console.log(connection);
+		connection.on('newMessage', (message) => {
+			gameDoc = message;
+		});
+
+		if(window.localStorage.getItem('playerSecret') && window.localStorage.getItem('gameId')) {
+			playerSecret = window.localStorage.getItem('playerSecret');
+			gameId = window.localStorage.getItem('gameId');
+
+			console.log(`Automatically joining: ${gameId} as ${playerSecret}`);
+
+			const resp = await joinGameStream();
+
+			gameDoc = resp.gameDoc;
+			playerName = resp.playerName;
+		}
 	});
 
 	const createGame = async () => {
-		const { connectionId } = connection;
+		let { connectionId } = connection;
+
+		if(!connectionId) {
+			connection = connect();
+			connectionId = connection.connectionId;
+		}
 
 		const resp = await fetch('/api/createGame', {
 			method: 'POST',
@@ -46,16 +63,25 @@
 
 		const json = await resp.json();
 
-		console.log(json);
-		
 		playerSecret = json.playerSecret;
-		gameId = json.game;
 
-		joinGameStream();
+		if(resp.status === 201) {
+			const resp = await joinGameStream();
+			gameDoc = resp.gameDoc;
+			gameId = gameDoc.game;
+		}
+
+		window.localStorage.setItem('playerSecret', playerSecret);
+		window.localStorage.setItem('gameId', gameId);
 	};
 
 	const joinGame = async () => {
-		const { connectionId } = connection;
+		let { connectionId } = connection;
+
+		if(!connectionId) {
+			connection = connect();
+			connectionId = connection.connectionId;
+		}
 
 		const resp = await fetch(`/api/joinGame/${gameId}`, {
 			method: 'POST',
@@ -68,8 +94,15 @@
 		console.log(`Join game response: ${resp.status}`);
 
 		const json = await resp.json();
+		playerSecret = json.playerSecret;
 
-		console.log(json);
+		if(resp.status === 200) {
+			const resp = await joinGameStream();
+			gameDoc = resp.gameDoc;
+		}
+
+		window.localStorage.setItem('playerSecret', playerSecret);
+		window.localStorage.setItem('gameId', gameId);
 	};
 
 	const joinGameStream = async () => {
@@ -83,7 +116,20 @@
 			})
 		});
 
+		const json = await resp.json();
+
 		console.log(`Join game stream response: ${resp.status}`);
+		console.log(json);
+
+		return json;
+	};
+
+	const quitGame = async () => {
+		window.localStorage.setItem('gameId', '');
+		window.localStorage.setItem('playerSecret', '');
+		gameId = '';
+		playerSecret = '';
+		connection.stop();
 	};
 </script>
 
@@ -98,11 +144,15 @@
 		<input bind:value={gameId} />
 		<button on:click={joinGame}>Join Game</button>
 	</div>
+	<div>
+		<button on:click={quitGame}>Quit Game</button>
+	</div>
 
 	<div>
-		{JSON.stringify(gameDoc)}
-		<br />
-		Secret: {playerSecret}
+		Players:
+		{#each gameDoc ? gameDoc.players : [] as player}
+			<p>{player.name}</p>
+		{/each}
 	</div>
 </main>
 

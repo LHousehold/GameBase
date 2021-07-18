@@ -18,7 +18,8 @@ module.exports = async function (context, req) {
     const gameDoc = {...context.bindings.inputDocument};
     const secretsDoc = {...context.bindings.secretsDocument};
 
-    const playerSecrets = { secretsDoc };
+    const playerSecrets = secretsDoc.playerSecrets;
+
     if(!playerSecrets.includes(playerSecret)) {
         context.res = {
             status: 406,
@@ -26,6 +27,9 @@ module.exports = async function (context, req) {
         };
         return;
     }
+
+    const playerIndex = playerSecrets.indexOf(playerSecret);
+    const playerName = gameDoc.players[playerIndex].name;
 
     // assuming everything is successful so far, we are going to add the new player to the game
     context.bindings.signalRGroupActions = [{
@@ -36,6 +40,6 @@ module.exports = async function (context, req) {
 
     context.res = {
         // status: 200, /* Defaults to 200 */
-        body: { ...gameDoc, playerSecret }
+        body: { gameDoc, playerSecret, playerName}
     };
 }

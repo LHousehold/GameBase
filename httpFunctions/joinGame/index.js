@@ -20,7 +20,7 @@ module.exports = async function (context, req) {
     const gameDoc = {...context.bindings.inputDocument};
     const secretsDoc = {...context.bindings.secretsDocument};
 
-    if(mode !== 'joining') {
+    if(gameDoc.mode !== 'joining') {
         context.res = {
             status: 400,
             body: {message: 'Game has already started.'}
@@ -49,6 +49,6 @@ module.exports = async function (context, req) {
 
     context.res = {
         // status: 200, /* Defaults to 200 */
-        body: {...gameDoc, playerSecret}
+        body: { playerSecret }
     };
 }

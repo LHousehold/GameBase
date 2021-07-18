@@ -8,7 +8,7 @@
       "methods": [
         "post"
       ],
-      "route": "joinGame/{id:alpha}"
+      "route": "joinGame/{gameId}"
     },
     {
       "type": "http",
@@ -35,8 +35,8 @@
       "databaseName": "householdDb",
       "collectionName": "gameCollection",
       "connectionStringSetting": "cosmos-lhousehold_DOCUMENTDB",
-      "id": "{id}-game",
-      "partitionKey": "{id}",
+      "id": "{gameId}-game",
+      "partitionKey": "{gameId}",
       "direction": "in",
       "type": "cosmosDB"
     },
@@ -45,8 +45,8 @@
       "databaseName": "householdDb",
       "collectionName": "gameCollection",
       "connectionStringSetting": "cosmos-lhousehold_DOCUMENTDB",
-      "id": "{id}-secrets",
-      "partitionKey": "{id}",
+      "id": "{gameId}-secrets",
+      "partitionKey": "{gameId}",
       "direction": "in",
       "type": "cosmosDB"
     }
