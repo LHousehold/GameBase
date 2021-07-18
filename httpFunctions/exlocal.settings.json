@@ -1,0 +1,13 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "cosmos-lhousehold_DOCUMENTDB": "<remote_cosmosdb_connection_string>",
+    "SignalRConnectionString": "<remote_signalr_connection_string>"
+  },
+  "Host": {
+    "LocalHttpPort": 7071,
+    "CORS": "<port_of_swa> (might not be necessary)",
+    "CORSCredentials": false
+  }
+}
