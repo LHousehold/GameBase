@@ -1,9 +1,0 @@
-{
-  "IsEncrypted": false,
-  "Values": {
-    "FUNCTIONS_WORKER_RUNTIME": "node",
-    "AzureWebJobsStorage": "removed",
-    "SignalRConnectionString": "<remote_signalr_connection_string>",
-    "cosmos-lhousehold_DOCUMENTDB": "<remote_cosmosdb_connection_string>"
-  }
-}
