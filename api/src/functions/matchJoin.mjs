@@ -54,6 +54,8 @@ app.http("matchJoin", {
 
     secretsDoc.playerSecrets.playerId = playerSecret;
 
+    // must broadcast to matchDoc that new player has joined
+
     const outputs = [matchDoc, playerDoc, secretsDoc];
 
     const response = {
