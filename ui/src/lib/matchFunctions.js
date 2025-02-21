@@ -1,4 +1,4 @@
-import { connect } from '$lib/live.js';
+import { connect, live } from '$lib/live.js';
 
 const createMatch = async (playerName) => {
 	const apiResp = await fetch('/api/match', {
@@ -8,14 +8,14 @@ const createMatch = async (playerName) => {
 
 	const createResponse = await apiResp.json();
 
-	const playerId = createResponse.playerDoc.id;
-
-	const matchId = createResponse.matchDoc.matchId;
+	const { playerId, matchId } = createResponse;
 
 	window.localStorage.setItem('playerId', playerId);
 	window.localStorage.setItem('matchId', matchId);
 
-	connect(playerId, matchId);
+	// connect(playerId, matchId);
+	// connect live to data
+	live(playerId, matchId);
 };
 
 const joinMatch = async (playerName, matchId) => {

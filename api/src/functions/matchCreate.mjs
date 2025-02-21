@@ -1,6 +1,8 @@
-import { app, output } from "@azure/functions";
+import { app } from "@azure/functions";
 import { v4 as uuidv4 } from "uuid";
+import { Surreal, RecordId } from "surrealdb";
 
+// azure | azure123pass!
 `
 Creating a new match.
 Doesn't care whether the player is in another match already.
@@ -13,18 +15,9 @@ The following docs are created:
 Metadata, Secrets, Player 1.
 `;
 
-const cosmosOutput = output.cosmosDB({
-  databaseName: "householdDb",
-  containerName: "gamesContent",
-  createIfNotExists: false,
-  partitionKey: "/matchId",
-  connection: "MyAccount_COSMOSDB",
-});
-
 app.http("matchCreate", {
   methods: ["POST"],
   authLevel: "anonymous",
-  extraOutputs: [cosmosOutput],
   route: "match",
   handler: async (request, context) => {
     const { playerName } = await request.json();
@@ -40,31 +33,45 @@ app.http("matchCreate", {
     const playerSecret = uuidv4();
     const matchId = uuidv4();
 
-    const matchDoc = {
-      id: `${matchId}-doc`,
-      matchId,
+    const playerRecordId = new RecordId('player', playerId);
+    const matchRecordId = new RecordId('match', matchId);
+    const secretRecordId = new RecordId('secret', matchId);
+
+    const db = new Surreal();
+
+    await db.connect("wss://householddb-06aiihsivpr4b71h3h9obqd06o.aws-use1.surreal.cloud", {
+      namespace: "games",
+      database: "games",
+      auth: {
+        username: "azure",
+        password: "azure123pass!",
+      }
+    });
+
+    await db.create(matchRecordId, {
       status: "pending",
-      ownerId: playerId,
-      playersIds: [playerId],
+      ownerId: playerRecordId,
+      playersIds: [playerRecordId],
       playerCountMax: 2,
-    };
+    });
 
-    const matchSecretsDoc = {
-      id: `${matchId}-secrets`,
-      matchId,
-      playerSecrets: { [playerId]: playerSecret },
-    };
+    await db.create(secretRecordId, {
+      matchId: matchRecordId,
+      playerSecrets: [ playerRecordId ],
+    });
 
-    const playerDoc = {
-      id: playerId,
-      matchId,
+    await db.create(playerRecordId, {
+      matchId: matchRecordId,
       name: playerName,
-    };
+    });
 
-    const outputs = [matchDoc, matchSecretsDoc, playerDoc];
+    await db.close();
 
     const response = {
-      body: JSON.stringify({ matchDoc, playerDoc }),
+      body: JSON.stringify({
+        matchId,
+        playerId
+      }),
       cookies: [
         {
           name: "playerSecret",
@@ -76,7 +83,7 @@ app.http("matchCreate", {
       ],
     };
 
-    context.extraOutputs.set(cosmosOutput, outputs);
+    // context.extraOutputs.set(cosmosOutput, outputs);
 
     return response;
   },

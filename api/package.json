@@ -9,6 +9,7 @@
   "dependencies": {
     "@azure/functions": "^4.0.0",
     "http": "^0.0.1-security",
+    "surrealdb": "^1.2.1",
     "uuid": "^11.0.2"
   },
   "main": "src/functions/*.mjs"

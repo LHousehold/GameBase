@@ -24,6 +24,7 @@
 		"vite": "^5.0.3"
 	},
 	"dependencies": {
-		"@microsoft/signalr": "^8.0.7"
+		"@microsoft/signalr": "^8.0.7",
+		"surrealdb": "^1.2.1"
 	}
 }
