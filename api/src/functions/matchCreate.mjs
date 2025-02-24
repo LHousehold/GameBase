@@ -57,12 +57,13 @@ app.http("matchCreate", {
 
     await db.create(secretRecordId, {
       matchId: matchRecordId,
-      playerSecrets: [ playerRecordId ],
+      playerSecrets: {[ playerRecordId ]: playerSecret},
     });
 
     await db.create(playerRecordId, {
       matchId: matchRecordId,
       name: playerName,
+      playerSecret
     });
 
     await db.close();
@@ -70,7 +71,8 @@ app.http("matchCreate", {
     const response = {
       body: JSON.stringify({
         matchId,
-        playerId
+        playerId,
+        playerSecret
       }),
       cookies: [
         {
@@ -82,8 +84,6 @@ app.http("matchCreate", {
         },
       ],
     };
-
-    // context.extraOutputs.set(cosmosOutput, outputs);
 
     return response;
   },

@@ -1,4 +1,5 @@
-import { connect, live } from '$lib/live.js';
+import { live } from './live.js';
+import { db } from './surrealdb';
 
 const createMatch = async (playerName) => {
 	const apiResp = await fetch('/api/match', {
@@ -8,13 +9,30 @@ const createMatch = async (playerName) => {
 
 	const createResponse = await apiResp.json();
 
-	const { playerId, matchId } = createResponse;
+	const { playerId, matchId, playerSecret } = createResponse;
 
 	window.localStorage.setItem('playerId', playerId);
 	window.localStorage.setItem('matchId', matchId);
 
-	// connect(playerId, matchId);
-	// connect live to data
+	console.log("signing in");
+	console.log(playerId);
+	console.log(playerSecret);
+
+	// move this to function tbh
+	const token = await db.signin({
+		namespace: 'games',
+		database: 'games',
+		access: 'player',
+	
+		// Also pass any properties required by the access definition
+		variables: {
+			playerId,
+			playerSecret
+		},
+	});
+
+	console.log("signed in", token);
+
 	live(playerId, matchId);
 };
 
@@ -31,7 +49,7 @@ const joinMatch = async (playerName, matchId) => {
 	window.localStorage.setItem('playerId', playerId);
 	window.localStorage.setItem('matchId', matchId);
 
-	connect(playerId, matchId);
+	// connect(playerId, matchId);
 };
 
 const rejoinMatch = async (matchId) => {
@@ -45,7 +63,7 @@ const rejoinMatch = async (matchId) => {
 
 	// check status code before joining
 
-	connect(playerId, matchId);
+	// connect(playerId, matchId);
 };
 
 export { createMatch, joinMatch, rejoinMatch };
