@@ -1,65 +1,55 @@
-import { app, input, output } from "@azure/functions";
+import { app } from "@azure/functions";
 import { v4 as uuidv4 } from "uuid";
-
-const cosmosInput = input.cosmosDB({
-  databaseName: "householdDb",
-  containerName: "gamesContent",
-  sqlQuery: "SELECT * from c where c.matchId = {matchId}",
-  connection: "MyAccount_COSMOSDB",
-});
-
-const cosmosOutput = output.cosmosDB({
-  databaseName: "householdDb",
-  containerName: "gamesContent",
-  createIfNotExists: false,
-  partitionKey: "/matchId",
-  connection: "MyAccount_COSMOSDB",
-});
-
-/*
-Joining a match means getting your name in and storing
-your metadata
-*/
+import { Surreal, RecordId } from "surrealdb";
 
 app.http("matchJoin", {
   methods: ["POST"],
   authLevel: "anonymous",
-  extraInputs: [cosmosInput],
-  extraOutputs: [cosmosOutput],
   route: "match/{matchId}/players",
   handler: async (request, context) => {
     const { playerName } = await request.json();
-    const matchDocs = context.extraInputs.get(cosmosInput);
+    const { matchId } = request.params;
 
-    const matchDoc = matchDocs.find((d) => id.includes("-doc"));
-    const secretsDoc = matchDocs.find((d) => id.includes("-secrets"));
+    const db = new Surreal();
+
+    await db.connect("wss://householddb-06aiihsivpr4b71h3h9obqd06o.aws-use1.surreal.cloud", {
+      namespace: "games",
+      database: "games",
+      auth: {
+        username: "azure",
+        password: "azure123pass!",
+      }
+    });
+
+    const match = await db.select(new RecordId('match', matchId))
 
     const playerId = uuidv4();
     const playerSecret = uuidv4();
 
-    matchDoc.playerIds.push(playerId);
+    const playerRecordId = new RecordId('player', playerId);
+    const matchRecordId = new RecordId('match', matchId);
+    const secretRecordId = new RecordId('secret', matchId);
 
-    if (matchDoc.playerIds.length > matchDoc.playerCountMax) {
-      return {
-        body: JSON.stringify({}),
-        status: 400,
-      };
-    }
+    // TODO
+    // await db.patch(matchRecordId, {
 
-    const playerDoc = {
-      id: playerId,
-      matchId,
+    // });
+
+    await db.create(secretRecordId, {
+      matchId: matchRecordId,
+      playerSecrets: {[ playerRecordId ]: playerSecret},
+    });
+
+    await db.create(playerRecordId, {
+      matchId: matchRecordId,
       name: playerName,
-    };
-
-    secretsDoc.playerSecrets.playerId = playerSecret;
-
-    // must broadcast to matchDoc that new player has joined
-
-    const outputs = [matchDoc, playerDoc, secretsDoc];
+      playerSecret
+    });
 
     const response = {
-      body: JSON.stringify({ matchDoc, playerDoc }),
+      body: JSON.stringify({ matchId,
+        playerId,
+        playerSecret }),
       cookies: [
         {
           name: "playerSecret",
@@ -70,8 +60,6 @@ app.http("matchJoin", {
         },
       ],
     };
-
-    context.extraOutputs.set(cosmosOutput, outputs);
 
     return response;
   },

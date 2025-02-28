@@ -1,5 +1,21 @@
-import { subscribeToMatch } from './live.js';
+import { subscribeToMatch } from './subscriptionFunctions.js';
 import { db } from './surrealdb';
+
+const signIn = async (playerId, playerSecret) => {
+	const token = await db.signin({
+		namespace: 'games',
+		database: 'games',
+		access: 'player',
+	
+		variables: {
+			playerId,
+			playerSecret
+		},
+	});
+
+	console.debug("Received token: ", token);
+	console.log("Signed in successfully.");
+};
 
 const createMatch = async (playerName) => {
 	const apiResp = await fetch('/api/match', {
@@ -13,20 +29,9 @@ const createMatch = async (playerName) => {
 
 	window.localStorage.setItem('playerId', playerId);
 	window.localStorage.setItem('matchId', matchId);
+	window.localStorage.setItem('secret', playerSecret);
 
-	// move this to function tbh
-	const token = await db.signin({
-		namespace: 'games',
-		database: 'games',
-		access: 'player',
-	
-		variables: {
-			playerId,
-			playerSecret
-		},
-	});
-
-	console.log("signed in");
+	signIn(playerId, playerSecret);
 
 	subscribeToMatch(playerId, matchId);
 };
@@ -39,12 +44,15 @@ const joinMatch = async (playerName, matchId) => {
 
 	const joinResponse = await apiResp.json();
 
-	const playerId = joinResponse.playerDoc.id;
+	const { playerId, matchId, playerSecret } = joinResponse;
 
 	window.localStorage.setItem('playerId', playerId);
 	window.localStorage.setItem('matchId', matchId);
+	window.localStorage.setItem('secret', playerSecret);
 
-	// connect(playerId, matchId);
+	signIn(playerId, playerSecret);
+
+	subscribeToMatch(playerId, matchId);
 };
 
 const rejoinMatch = async (matchId) => {

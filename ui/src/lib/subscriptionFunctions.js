@@ -1,4 +1,5 @@
 
+import { db } from './surrealdb.js';
 import { matchState, playerState } from './matchState.svelte.js';
 
 const subscribeToMatch = async (playerId, matchId) => {
@@ -20,6 +21,14 @@ const subscribeToMatch = async (playerId, matchId) => {
 			(action, result) => {
 				playerState.value = result;
 			});
+
+		const initMatchResult = await db.query(`SELECT * FROM match WHERE record::id(id)="${matchId}"`);
+
+		matchState.value = initMatchResult.pop();
+
+		const initPlayerResult = await db.query(`SELECT * FROM player WHERE record::id(id)="${playerId}"`);
+
+		playerState.value = initPlayerResult.pop();
 	} catch (err) {
 		console.error(err);
 	}
