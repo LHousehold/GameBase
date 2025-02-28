@@ -1,23 +1,29 @@
-import { db } from './surrealdb';
 
-const updateMatch = (result) => {
-	// somehow need to enforce security; can't subscribe to someone else's results
-};
+import { matchState, playerState } from './matchState.svelte.js';
 
-const live = async (playerId, matchId) => {
-	const queryUuid = await db.query(
-		"LIVE SELECT * FROM match where playerCountMax < 3"
-	);
+const subscribeToMatch = async (playerId, matchId) => {
+	try {
+		const matchQueryUuid = await db.query(
+			`LIVE SELECT * FROM match WHERE record::id(id)="${matchId}"`
+		);
 
-	await db.subscribeLive(queryUuid,
-		(action, result) => {
-			// action can be: 'CREATE', 'UPDATE', 'DELETE' or 'CLOSE'
-			if (action === 'CLOSE') return;
+		await db.subscribeLive(matchQueryUuid,
+			(action, result) => {
+				matchState.value = result;
+			});
 
-			// result contains either the entire record, or a set of JSON patches when diff mode is enabled
-			console.log(result);
-			// updateMatch(result);
-		});
+		const playerQueryUuid = await db.query(
+			`LIVE SELECT * FROM player WHERE record::id(id)="${playerId}"`
+		);
+
+		await db.subscribeLive(playerQueryUuid,
+			(action, result) => {
+				playerState.value = result;
+			});
+	} catch (err) {
+		console.error(err);
+	}
+
 }
 
-export { live };
+export { subscribeToMatch };

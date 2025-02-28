@@ -1,4 +1,5 @@
 <script>
+	import { matchState, playerState } from '$lib/matchState.svelte.js';
 	import { createMatch, joinMatch, rejoinMatch } from '$lib/matchFunctions.js';
 
 	let playerName = $state('');
@@ -23,4 +24,4 @@
 
 <button onclick={() => rejoinMatch(matchId)}>Rejoin</button>
 
-<p>{match}</p>
+<p>{JSON.stringify(matchState.value)}</p>

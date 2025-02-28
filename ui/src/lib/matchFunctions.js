@@ -1,4 +1,4 @@
-import { live } from './live.js';
+import { subscribeToMatch } from './live.js';
 import { db } from './surrealdb';
 
 const createMatch = async (playerName) => {
@@ -14,26 +14,21 @@ const createMatch = async (playerName) => {
 	window.localStorage.setItem('playerId', playerId);
 	window.localStorage.setItem('matchId', matchId);
 
-	console.log("signing in");
-	console.log(playerId);
-	console.log(playerSecret);
-
 	// move this to function tbh
 	const token = await db.signin({
 		namespace: 'games',
 		database: 'games',
 		access: 'player',
 	
-		// Also pass any properties required by the access definition
 		variables: {
 			playerId,
 			playerSecret
 		},
 	});
 
-	console.log("signed in", token);
+	console.log("signed in");
 
-	live(playerId, matchId);
+	subscribeToMatch(playerId, matchId);
 };
 
 const joinMatch = async (playerName, matchId) => {
