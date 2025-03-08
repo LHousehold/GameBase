@@ -21,24 +21,18 @@ app.http("matchJoin", {
       }
     });
 
-    const match = await db.select(new RecordId('match', matchId))
-
     const playerId = uuidv4();
     const playerSecret = uuidv4();
 
     const playerRecordId = new RecordId('player', playerId);
     const matchRecordId = new RecordId('match', matchId);
-    const secretRecordId = new RecordId('secret', matchId);
 
-    // TODO
-    // await db.patch(matchRecordId, {
+    const match = await db.select(new RecordId('match', matchId))
+    // confirm match does exist before attempting to join
 
-    // });
-
-    await db.create(secretRecordId, {
-      matchId: matchRecordId,
-      playerSecrets: {[ playerRecordId ]: playerSecret},
-    });
+    await db.patch(matchRecordId, [
+      { op: 'add', path: '/playersIds', value: playerRecordId },
+    ]);
 
     await db.create(playerRecordId, {
       matchId: matchRecordId,
@@ -46,19 +40,23 @@ app.http("matchJoin", {
       playerSecret
     });
 
+    await db.close();
+
     const response = {
-      body: JSON.stringify({ matchId,
+      body: JSON.stringify({
+        matchId,
         playerId,
-        playerSecret }),
-      cookies: [
-        {
-          name: "playerSecret",
-          value: playerSecret,
-          maxAge: 60 * 10,
-          httpOnly: true,
-          path: "/",
-        },
-      ],
+        playerSecret
+      }),
+      // cookies: [
+      //   {
+      //     name: "playerSecret",
+      //     value: playerSecret,
+      //     maxAge: 60 * 10,
+      //     httpOnly: true,
+      //     path: "/",
+      //   },
+      // ],
     };
 
     return response;

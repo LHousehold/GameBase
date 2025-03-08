@@ -36,6 +36,7 @@ const createMatch = async (playerName) => {
 	subscribeToMatch(playerId, matchId);
 };
 
+// const joinMatch = async () => {};
 const joinMatch = async (playerName, matchId) => {
 	const apiResp = await fetch(`/api/match/${matchId}/players`, {
 		method: 'POST',
@@ -44,7 +45,7 @@ const joinMatch = async (playerName, matchId) => {
 
 	const joinResponse = await apiResp.json();
 
-	const { playerId, matchId, playerSecret } = joinResponse;
+	const { playerId, playerSecret } = joinResponse;
 
 	window.localStorage.setItem('playerId', playerId);
 	window.localStorage.setItem('matchId', matchId);

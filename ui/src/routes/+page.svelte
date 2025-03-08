@@ -3,7 +3,7 @@
 	import { createMatch, joinMatch, rejoinMatch } from '$lib/matchFunctions.js';
 
 	let playerName = $state('');
-	let matchId = $state('');
+	let matchIdState = $state('');
 
 	let match = $state('');
 
@@ -18,10 +18,10 @@
 
 <button onclick={() => createMatch(playerName)}>Create</button>
 
-<input type="text" placeholder="Match ID" bind:value={matchId} />
+<input type="text" placeholder="Match ID" bind:value={matchIdState} />
 
-<button onclick={() => joinMatch(playerName)}>Join</button>
+<button onclick={() => joinMatch(playerName, matchIdState)}>Join</button>
 
-<button onclick={() => rejoinMatch(matchId)}>Rejoin</button>
+<button onclick={() => rejoinMatch(matchIdState)}>Rejoin</button>
 
 <p>{JSON.stringify(matchState.value)}</p>

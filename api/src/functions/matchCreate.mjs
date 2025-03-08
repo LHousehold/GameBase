@@ -46,7 +46,6 @@ app.http("matchCreate", {
 
     await db.create(secretRecordId, {
       matchId: matchRecordId,
-      playerSecrets: {[ playerRecordId ]: playerSecret},
     });
 
     await db.create(playerRecordId, {
@@ -63,15 +62,15 @@ app.http("matchCreate", {
         playerId,
         playerSecret
       }),
-      cookies: [
-        {
-          name: "playerSecret",
-          value: playerSecret,
-          maxAge: 60 * 10,
-          httpOnly: true,
-          path: "/",
-        },
-      ],
+      // cookies: [
+      //   {
+      //     name: "playerSecret",
+      //     value: playerSecret,
+      //     maxAge: 60 * 10,
+      //     httpOnly: true,
+      //     path: "/",
+      //   },
+      // ],
     };
 
     return response;
