@@ -2,26 +2,25 @@
 	import { matchState, playerState } from '$lib/matchState.svelte.js';
 	import { createMatch, joinMatch, rejoinMatch } from '$lib/matchFunctions.js';
 
-	let playerName = $state('');
-	let matchIdState = $state('');
+	let playerNameInput = $state('');
+	let matchCodeInput = $state('');
 
-	let match = $state('');
-
-	// probably want to make a store for matchId
-	if (typeof window !== 'undefined') {
-		// use svelte environment instead
-		match = window.localStorage.getItem('matchId');
-	}
+	console.log('matchState', matchState);
+	console.log('matchStatevalue', matchState.value);
 </script>
 
-<input type="text" placeholder="Player Name" bind:value={playerName} />
+<input type="text" placeholder="Player Name" bind:value={playerNameInput} />
 
-<button onclick={() => createMatch(playerName)}>Create</button>
+<button onclick={() => createMatch(playerNameInput)}>Create</button>
 
-<input type="text" placeholder="Match ID" bind:value={matchIdState} />
+<input type="text" placeholder="Match Code" bind:value={matchCodeInput} />
 
-<button onclick={() => joinMatch(playerName, matchIdState)}>Join</button>
+<button onclick={() => joinMatch(playerNameInput, matchCodeInput)}>Join</button>
 
-<button onclick={() => rejoinMatch(matchIdState)}>Rejoin</button>
+<!-- <button onclick={() => rejoinMatch(matchIdState)}>Rejoin</button> -->
 
-<p>{JSON.stringify(matchState.value)}</p>
+{#if matchState.value?.status && matchState.value.status === 'pending'}
+	<p>Participating in match {matchState.value.matchCode}</p>
+	<!-- <p>With players: {JSON.stringify(matchState.value)}</p> -->
+	<p>Status: {matchState.value.status}</p>
+{/if}

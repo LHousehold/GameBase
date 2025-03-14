@@ -26,6 +26,14 @@ app.http("matchCreate", {
     const matchRecordId = new RecordId('match', matchId);
     const secretRecordId = new RecordId('secret', matchId);
 
+    // ensure output is sanitized; reject vowels?
+    const matchCodeInt = Math.floor(Math.random() * parseInt(8999999, 0)) + 1000000;
+    const matchCodeString = matchCodeInt.toString();
+    let matchCode = '';
+    for (const c of matchCodeString) {
+      matchCode += 'BCDFGHJKLM'.charAt(c);
+    };
+
     const db = new Surreal();
 
     await db.connect("wss://householddb-06aiihsivpr4b71h3h9obqd06o.aws-use1.surreal.cloud", {
@@ -39,8 +47,9 @@ app.http("matchCreate", {
 
     await db.create(matchRecordId, {
       status: "pending",
+      matchCode, // for easy sharing/parsing
       ownerId: playerRecordId,
-      playersIds: [playerRecordId],
+      players: [{ id: playerRecordId, name: playerName }],
       playerCountMax: 2,
     });
 
@@ -58,7 +67,7 @@ app.http("matchCreate", {
 
     const response = {
       body: JSON.stringify({
-        matchId,
+        matchCode,
         playerId,
         playerSecret
       }),

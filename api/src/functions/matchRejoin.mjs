@@ -11,6 +11,8 @@ const cosmosInput = input.cosmosDB({
 Match knows who you are; rejoining is fetching your metadata
 */
 
+// HAVE TO UPDATE THIS
+
 app.http("matchRejoin", {
   methods: ["GET"],
   authLevel: "anonymous",

@@ -5,10 +5,10 @@ import { Surreal, RecordId } from "surrealdb";
 app.http("matchJoin", {
   methods: ["POST"],
   authLevel: "anonymous",
-  route: "match/{matchId}/players",
+  route: "match/{matchCode}/players",
   handler: async (request, context) => {
     const { playerName } = await request.json();
-    const { matchId } = request.params;
+    const { matchCode } = request.params;
 
     const db = new Surreal();
 
@@ -25,13 +25,15 @@ app.http("matchJoin", {
     const playerSecret = uuidv4();
 
     const playerRecordId = new RecordId('player', playerId);
-    const matchRecordId = new RecordId('match', matchId);
 
-    const match = await db.select(new RecordId('match', matchId))
+    // const match = await db.select(new RecordId('match', matchId))
     // confirm match does exist before attempting to join
+    const matchResults = await db.query(`SELECT * FROM match WHERE matchCode="${matchCode}"`);
+    const match = matchResults[0][0]; // TODO check
+    const matchRecordId = match.id;
 
     await db.patch(matchRecordId, [
-      { op: 'add', path: '/playersIds', value: playerRecordId },
+      { op: 'add', path: '/playersIds', value: { id: playerRecordId, name: playerName } },
     ]);
 
     await db.create(playerRecordId, {
@@ -44,7 +46,7 @@ app.http("matchJoin", {
 
     const response = {
       body: JSON.stringify({
-        matchId,
+        matchCode,
         playerId,
         playerSecret
       }),

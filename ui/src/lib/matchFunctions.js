@@ -25,20 +25,19 @@ const createMatch = async (playerName) => {
 
 	const createResponse = await apiResp.json();
 
-	const { playerId, matchId, playerSecret } = createResponse;
+	const { playerId, matchCode, playerSecret } = createResponse;
 
 	window.localStorage.setItem('playerId', playerId);
-	window.localStorage.setItem('matchId', matchId);
+	window.localStorage.setItem('matchCode', matchCode);
 	window.localStorage.setItem('secret', playerSecret);
 
-	signIn(playerId, playerSecret);
+	await signIn(playerId, playerSecret);
 
-	subscribeToMatch(playerId, matchId);
+	await subscribeToMatch(playerId, matchCode);
 };
 
-// const joinMatch = async () => {};
-const joinMatch = async (playerName, matchId) => {
-	const apiResp = await fetch(`/api/match/${matchId}/players`, {
+const joinMatch = async (playerName, matchCode) => {
+	const apiResp = await fetch(`/api/match/${matchCode}/players`, {
 		method: 'POST',
 		body: JSON.stringify({ playerName })
 	});
@@ -48,26 +47,22 @@ const joinMatch = async (playerName, matchId) => {
 	const { playerId, playerSecret } = joinResponse;
 
 	window.localStorage.setItem('playerId', playerId);
-	window.localStorage.setItem('matchId', matchId);
+	window.localStorage.setItem('matchCode', matchCode);
 	window.localStorage.setItem('secret', playerSecret);
 
 	signIn(playerId, playerSecret);
 
-	subscribeToMatch(playerId, matchId);
+	subscribeToMatch(playerId, matchCode);
 };
 
-const rejoinMatch = async (matchId) => {
+const rejoinMatch = async (matchId) => { //replace with match code
 	const playerId = window.localStorage.getItem('playerId');
 
 	await fetch(`/api/match/${matchId}/players/${playerId}`, {
 		method: 'GET'
 	});
 
-	// don't need to set localstorage because should already exist
-
-	// check status code before joining
-
-	// connect(playerId, matchId);
+	// to populate later
 };
 
 export { createMatch, joinMatch, rejoinMatch };
